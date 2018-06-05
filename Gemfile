@@ -2,15 +2,19 @@ source 'https://rubygems.org'
 
 gemspec
 
-group :development, :test do
+group :development do
   gem 'rake', '< 11.0'
-  gem 'rspec', '~> 2'
+  gem 'rubocop', '~> 0.39'
   gem 'jruby-openssl', platform: [:jruby]
-  gem 'webmock'
   gem 'byebug'
   gem 'pry'
   gem 'pry-rails'
-  gem 'factory_bot'
   gem 'yard'
   gem 'redcarpet'
+end
+
+group :test do
+  gem 'rspec', '~> 2'
+  gem 'webmock'
+  gem 'factory_bot'
 end
