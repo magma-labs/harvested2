@@ -4,7 +4,7 @@ gemspec
 
 group :development do
   gem 'rake', '< 11.0'
-  gem 'rubocop', '~> 0.39'
+  gem 'rubocop', '~> 0.49.0'
   gem 'jruby-openssl', platform: [:jruby]
   gem 'byebug'
   gem 'pry'
