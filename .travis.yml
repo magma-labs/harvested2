@@ -1,4 +1,7 @@
 language: ruby
+cache: bundler
+dist: trusty
+sudo: false
 
 rvm:
   - 2.1
@@ -8,8 +11,3 @@ rvm:
 
 script:
   - bundle exec rake
-
-branches:
-  only: master
-
-sudo: false
