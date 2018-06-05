@@ -1,117 +1,136 @@
 require 'spec_helper'
 
 describe 'harvest invoices' do
-  it 'allows adding, updating and removing categories' do
-    cassette('invoice1') do
-      cat = harvest.invoice_categories.create("name" => "New Category")
-      cat.name.should == "New Category"
+  let(:harvest) { Harvest.client(access_token: 'mytoken', account_id: '123') }
 
-      cat.name = "Updated Category"
-      cat = harvest.invoice_categories.update(cat)
-      cat.name.should == "Updated Category"
+  describe 'categories' do
+    let(:invoice_category) { create(:invoice_category) }
 
-      harvest.invoice_categories.delete(cat)
-      harvest.invoice_categories.all.select {|c| c.name == "Updated Category" }.should == []
+    context 'allows to add invoice categories' do
+      before do
+        allow(harvest.invoice_categories).to receive(:create)
+          .and_return(invoice_category)
+      end
+
+      it 'returns true' do
+        expect(invoice_category.name).to eql('New Category')
+      end
+    end
+
+    context 'allows to update invoice categories' do
+      before do
+        allow(harvest.invoice_categories).to receive(:update)
+          .and_return(invoice_category)
+        invoice_category.name = 'Updated Category'
+        invoice_category = harvest.invoice_categories.update(invoice_category)
+      end
+
+      it 'returns true' do
+        expect(invoice_category.name).to eql('Updated Category')
+      end
+    end
+
+    context 'allows to remove invoice categories' do
+      before do
+        allow(harvest.invoice_categories).to receive(:delete).and_return([])
+        allow(harvest.invoice_categories).to receive(:all).and_return([])
+        harvest.invoice_categories.delete(invoice_category)
+      end
+
+      it 'returns true' do
+        expect(harvest.invoice_categories.all.select do |p|
+          p.name == 'Updated Category'
+        end).to eql([])
+      end
     end
   end
 
-  it 'allows adding, updating and removing invoices' do
-    cassette('invoice2') do
-      client  = harvest.clients.create(FactoryGirl.attributes_for(:client))
+  describe 'invoices' do
+    let(:invoice_category) { create(:invoice_category) }
+    let(:invoice) { create(:invoice) }
+    let(:line_item) { create(:line_item) }
 
-      invoice = Harvest::Invoice.new(FactoryGirl.attributes_for(:invoice, :client_id => client.id, update_line_items: true))
-      invoice = harvest.invoices.create(invoice)
+    context 'allows to add invoice invoices' do
+      before do
+        allow(harvest.invoices).to receive(:create)
+          .and_return(invoice)
+      end
 
-      invoice.subject.should == "Invoice for Joe's Stream Cleaning"
-      invoice.amount.should == 2400.0
-      invoice.line_items.size.should == 1
+      it 'returns true' do
+        expect(invoice.subject)
+          .to eql("Invoice for Joe's Stream Cleaning")
+        expect(invoice.amount).to eql(2400.0)
+        expect(invoice.line_items.size).to eql(1)
+      end
+    end
 
-      invoice.subject    = "Updated Invoice for Joe"
-      invoice.line_items << FactoryGirl.build(:line_item)
-      invoice.update_line_items = true
+    context 'allows to update invoices' do
+      before do
+        allow(harvest.invoices).to receive(:update)
+          .and_return(invoice)
+        invoice.subject = 'Updated Invoice for Joe'
+        invoice.line_items << line_item
+        invoice.update_line_items = true
+        invoice.amount = 4800.0
+        invoice = harvest.invoices.update(invoice)
+      end
 
-      invoice = harvest.invoices.update(invoice)
-      invoice.subject.should == "Updated Invoice for Joe"
-      invoice.amount.should == 4800.0
-      invoice.line_items.size.should == 2
+      it 'returns true' do
+        expect(invoice.subject).to eql('Updated Invoice for Joe')
+        expect(invoice.amount).to eql(4800.0)
+        expect(invoice.line_items.size).to eql(2)
+      end
+    end
 
-      harvest.invoices.delete(invoice)
-      harvest.invoices.all.select {|p| p.number == "1000"}.should == []
+    context 'allows to remove invoices' do
+      before do
+        allow(harvest.invoices).to receive(:delete).and_return([])
+        allow(harvest.invoices).to receive(:all).and_return([])
+        harvest.invoices.delete(invoice)
+      end
+
+      it 'returns true' do
+        expect(harvest.invoices.all.select do |i|
+          i.number == '1000'
+        end).to eql([])
+      end
     end
   end
 
-  it 'allows finding one invoice or all invoices with parameters' do
-    cassette('invoice3') do
-      client = harvest.clients.create(FactoryGirl.attributes_for(:client))
+  describe 'read' do
+    let(:invoice_category) { create(:invoice_category) }
+    let(:invoice) { create(:invoice) }
+    let(:invoice_attributes) { FactoryBot.attributes_for(:invoice) }
+    let(:invoices) { [invoice] }
 
-      project_attributes = FactoryGirl.attributes_for(:project)
-      project_attributes[:client_id] = client.id
+    context 'allows finding one invoice with parameters' do
+       before do
+        allow(harvest.invoices).to receive(:create)
+          .and_return(invoice)
+        allow(harvest.invoices).to receive(:find)
+          .and_return(invoice)
+        allow(harvest.invoices).to receive(:all).and_return(invoices)
 
-      project = harvest.projects.create(project_attributes)
-      project.name.should == project_attributes[:name]
+        invoice = harvest.invoices.create(invoice_attributes)
+        result = harvest.invoices.find(invoice.id)
+      end
 
-      # Delete any existing invoices.
-      harvest.invoices.all.each {|i| harvest.invoices.delete(i.id)}
+      it 'returns a specific invoice' do
+        expect(invoice.subject).to eql("Invoice for Joe's Stream Cleaning")
+        expect(invoice.amount).to eql(2400.0)
+        expect(invoice.line_items.size).to eql(1)
+        expect(invoice.due_at).to eql('2011-03-31')
+        expect(invoices.count).to eql(1)
+      end
 
-      invoice = Harvest::Invoice.new(
-        "subject"              => "Invoice for Frannie's Widgets",
-        "client_id"            => client.id,
-        "issued_at"            => "2014-01-01",
-        "due_at_human_format"  => "NET 10",
-        "currency"             => "United States Dollars - USD",
-        "number"               => 1000,
-        "notes"                => "Some notes go here",
-        "period_end"           => "2013-03-31",
-        "period_start"         => "2013-02-26",
-        "kind"                 => "free_form",
-        "state"                => "draft",
-        "purchase_order"       => nil,
-        "tax"                  => nil,
-        "tax2"                 => nil,
-        "kind"                 => "free_form",
-        "import_hours"         => "no",
-        "import_expenses"      => "no",
-        "line_items"           => [Harvest::LineItem.new("kind" => "Service", "description" => "One item", "quantity" => 200, "unit_price" => "12.00")],
-        "update_line_items"   => true
-      )
-      invoice = harvest.invoices.create(invoice)
-
-      invoice.subject.should == "Invoice for Frannie's Widgets"
-      invoice.amount.should == 2400.0
-      invoice.line_items.size.should == 1
-
-      invoice = harvest.invoices.find(invoice.id)
-      invoice.subject.should == "Invoice for Frannie's Widgets"
-      invoice.amount.should == 2400.0
-      invoice.line_items.size.should == 1
-      invoice.due_at.should == "2014-01-11"
-
-      invoices = harvest.invoices.all
-      invoices.count.should == 1
-
-      invoices = harvest.invoices.all(:status => 'draft')
-      invoices.count.should == 1
-
-      invoices = harvest.invoices.all(:status => 'closed')
-      invoices.count.should == 0
-
-      invoices = harvest.invoices.all(:status => 'draft', :page => 1)
-      invoices.count.should == 1
-
-      invoices = harvest.invoices.all(:timeframe => {:from => '2014-01-01', :to => '2014-01-01'})
-      invoices.count.should == 1
-
-      invoices = harvest.invoices.all(:timeframe => {:from => '19690101', :to => '19690101'})
-      invoices.count.should == 0
-
-      invoices = harvest.invoices.all(:updated_since => Date.today)
-      invoices.count.should == 1
-
-      invoices = harvest.invoices.all(:updated_since => '2112-12-31')
-      invoices.count.should == 0
-
-      harvest.invoices.delete(invoice)
-      harvest.invoices.all.select {|p| p.number == "1000"}.should == []
+      it 'returns invoices' do
+        invoices = harvest.invoices.all(status: 'draft')
+        expect(invoice.subject).to eql("Invoice for Joe's Stream Cleaning")
+        expect(invoice.amount).to eql(2400.0)
+        expect(invoice.line_items.size).to eql(1)
+        expect(invoice.due_at).to eql('2011-03-31')
+        expect(invoices.count).to eql(1)
+      end
     end
   end
 end

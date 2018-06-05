@@ -12,7 +12,7 @@ module Harvest
 
       def as_json(args = {})
         inner_json = self.to_hash.stringify_keys
-        inner_json.delete("cache_version")
+        inner_json.delete('cache_version')
         if self.class.skip_json_root?
           inner_json
         else
@@ -20,7 +20,9 @@ module Harvest
         end
       end
 
-      def to_i; id; end
+      def to_i
+        id
+      end
 
       def ==(other)
         other.kind_of?(self.class) && id == other.id
@@ -58,7 +60,9 @@ module Harvest
 
       def parse(json)
         parsed = String === json ? JSON.parse(json) : json
-        Array.wrap(parsed).map {|attrs| skip_json_root? ? new(attrs) : new(attrs[json_root])}
+        Array.wrap(parsed[json_root.pluralize]).map do |attrs|
+          skip_json_root? ? new(attrs) : new(attrs[json_root])
+        end
       end
 
       def json_root

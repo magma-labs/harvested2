@@ -1,9 +1,9 @@
 module Harvest
   module API
     class Expenses < Base
-      api_model Harvest::Expense
-
       include Harvest::Behavior::Crud
+
+      api_model Harvest::Expense
 
       def all(date = ::Time.now, user = nil)
         date = ::Time.parse(date) if String === date

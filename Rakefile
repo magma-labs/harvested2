@@ -1,4 +1,5 @@
-require 'bundler/gem_tasks'
+require 'bundler'
+Bundler::GemHelper.install_tasks
 
 require 'rspec/core/rake_task'
 RSpec::Core::RakeTask.new(:spec)
@@ -16,7 +17,7 @@ end
 
 desc 'Removes all data on harvest'
 task 'clean_remote' do
-  require 'harvested'
+  require 'harvested2'
   require File.expand_path('../spec/support/harvested_helpers', __FILE__)
   HarvestedHelpers.clean_remote
 end

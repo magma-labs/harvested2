@@ -1,51 +1,104 @@
 require 'spec_helper'
 
 describe 'harvest clients' do
-  it 'allows adding, updating and removing clients' do
-    client_attributes = FactoryGirl.attributes_for(:client)
+  let(:harvest) { Harvest.client(access_token: 'mytoken', account_id: '123') }
 
-    cassette("client") do
-      client = harvest.clients.create(client_attributes)
-      client.name.should == client_attributes[:name]
+  describe 'clients' do
+    let(:client) { create(:client) }
+    let(:client_attributes) { FactoryBot.attributes_for(:client) }
 
-      client.name = "Joe and Frank's Steam Cleaning"
-      client = harvest.clients.update(client)
-      client.name.should == "Joe and Frank's Steam Cleaning"
+    context 'allows to add clients' do
+      before do
+        allow(harvest.clients).to receive(:create).and_return(client)
+      end
 
-      harvest.clients.delete(client)
-      harvest.clients.all.select {|p| p.name == "Joe and Frank's Steam Cleaning"}.should == []
+      it 'returns true' do
+        expect(client.name).to eql(client_attributes[:name])
+      end
+    end
+
+    context 'allows to update clients' do
+      before do
+        allow(harvest.clients).to receive(:update).and_return(client)
+        client.name = "Joe and Frank's Steam Cleaning"
+        client = harvest.clients.update(client)
+      end
+
+      it 'returns true' do
+        expect(client.name).to eql("Joe and Frank's Steam Cleaning")
+      end
+    end
+
+    context 'allows to remove clients' do
+      before do
+        allow(harvest.clients).to receive(:delete).and_return([])
+        allow(harvest.clients).to receive(:all).and_return([])
+        harvest.clients.delete(client)
+      end
+
+      it 'returns true' do
+        expect(harvest.clients.all.select do |p|
+          p.name == "Joe and Frank's Steam Cleaning"
+        end).to eql([])
+      end
+    end
+
+    context 'allows activating and deactivating clients' do
+      let(:active_client) { create(:client, :active) }
+      let(:deactive_client) { create(:client, :deactive) }
+
+      before do
+        allow(harvest.clients).to receive(:deactivate)
+          .and_return(deactive_client)
+        allow(harvest.clients).to receive(:activate)
+          .and_return(active_client)
+      end
+
+      it 'should be active' do
+        expect(active_client).to be_active
+      end
+
+      it 'should be deactive' do
+        client = harvest.clients.deactivate(client)
+        expect(deactive_client).not_to be_active
+      end
+
+      it 'should reactive a client' do
+        client = harvest.clients.activate(client)
+        expect(active_client).to be_active
+      end
     end
   end
 
-  it 'allows activating and deactivating clients' do
-    cassette("client2") do
-      client = harvest.clients.create(FactoryGirl.attributes_for(:client))
-      client.should be_active
+  describe 'contacts' do
+    let(:client) { create(:client) }
+    let(:contact) { create(:contact, client: client) }
+    let(:contact_attributes) { FactoryBot.attributes_for(:contact) }
 
-      client = harvest.clients.deactivate(client)
-      client.should_not be_active
+    context 'allows to add contacts' do
+      before do
+        allow(harvest.contacts).to receive(:create)
+          .and_return(contact)
+        contact = harvest.contacts.create(contact_attributes)
+      end
 
-      client = harvest.clients.activate(client)
-      client.should be_active
+      it 'should be true' do
+        expect(contact.client_id).to eql(client.id)
+        expect(contact.email).to eql('jane@example.com')
+      end
     end
-  end
 
-  context "contacts" do
-    it "allows adding, updating, and removing contacts" do
-      cassette("client3") do
-        client = harvest.clients.create(FactoryGirl.attributes_for(:client))
+    context 'allows to delete contacts' do
+      before do
+        allow(harvest.contacts).to receive(:delete).and_return([])
+        allow(harvest.contacts).to receive(:all).and_return([])
+        contact = harvest.contacts.delete(contact)
+      end
 
-        contact        = harvest.contacts.create(
-          "client_id"  => client.id,
-          "email"      => "jane@example.com",
-          "first_name" => "Jane",
-          "last_name"  => "Doe"
-        )
-        contact.client_id.should == client.id
-        contact.email.should == "jane@example.com"
-
-        harvest.contacts.delete(contact)
-        harvest.contacts.all.select {|e| e.email == "jane@example.com" }.should == []
+      it 'should return empty' do
+        expect(harvest.contacts.all.select do |e|
+          e.email == 'jane@example.com'
+        end).to eql([])
       end
     end
   end

@@ -18,16 +18,17 @@ module Harvest
   class User < Hashie::Mash
     include Harvest::Model
 
-    api_path '/people'
+    skip_json_root true
+    api_path '/users'
 
     delegate_methods(:active?     => :is_active,
                      :admin?      => :is_admin,
                      :contractor? => :is_contractor)
 
     def initialize(args = {}, _ = nil)
-      args             = args.to_hash.stringify_keys
-      args["is_admin"] = args.delete("admin") if args["admin"]
-      self.timezone    = args.delete("timezone") if args["timezone"]
+      args             = args.stringify_keys
+      args["is_admin"] = args.delete('admin') if args['admin']
+      self.timezone    = args.delete('timezone') if args['timezone']
       super
     end
 
@@ -48,9 +49,9 @@ module Harvest
       when 'pst', 'pdt' then self.timezone = 'america/los_angeles'
       else
         if Harvest::Timezones::MAPPING[tz]
-          self["timezone"] = Harvest::Timezones::MAPPING[tz]
+          self['timezone'] = Harvest::Timezones::MAPPING[tz]
         else
-          self["timezone"] = timezone
+          self['timezone'] = timezone
         end
       end
     end

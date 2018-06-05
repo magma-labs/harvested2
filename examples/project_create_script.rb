@@ -85,8 +85,8 @@ harvest.users.all.each do |u|
 	next unless u.is_active?
 
 	puts "  Adding User: #{u.first_name} #{u.last_name}"
-	user_assignment = Harvest::UserAssignment.new(user_id: u.id, project_id: project.id)
-	harvest.user_assignments.create(user_assignment)
+	user_project_assignment = Harvest::UserProjectAssignment.new(user_id: u.id)
+	harvest.user_project_assignments.create(user_project_assignment)
 end
 
 puts "\nProject successfully created."

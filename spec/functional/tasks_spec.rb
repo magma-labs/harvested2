@@ -1,81 +1,118 @@
 require 'spec_helper'
 
 describe 'harvest tasks' do
-  it 'allows adding, updating and removing tasks' do
-    cassette('tasks') do
-      task            = harvest.tasks.create(
-        "name"        => "A crud task",
-        "billable_by_default"    => true,
-        "default_hourly_rate"    => 120
-      )
-      task.default_hourly_rate.should == 120.0
+  let(:harvest) { Harvest.client(access_token: 'mytoken', account_id: '123') }
 
-      task.default_hourly_rate = 140
-      task = harvest.tasks.update(task)
-      task.default_hourly_rate.should == 140.0
+  describe 'tasks' do
+    let(:task) { create(:task) }
 
-      harvest.tasks.delete(task)
-      harvest.tasks.all.select {|t| t.name == "A crud task"}.should == []
-    end
-  end
+    context 'allows to add invoice tasks' do
+      before do
+        allow(harvest.tasks).to receive(:create)
+          .and_return(task)
+      end
 
-  context "task assignments" do
-    it "allows adding, updating, and removing tasks from projects" do
-      cassette('tasks2') do
-        client = harvest.clients.create(FactoryGirl.attributes_for(:client))
-
-        project       = harvest.projects.create(
-          "name"      => "Test Project2",
-          "active"    => true,
-          "notes"     => "project to test the api",
-          "client_id" => client.id
-        )
-
-        task1            = harvest.tasks.create(
-          "name"                => "A task for joe",
-          "billable_by_default" => true,
-          "default_hourly_rate" => 120
-        )
-        
-        # need to keep at least one task on the project
-        task2            = harvest.tasks.create(
-          "name"                => "A task for joe2",
-          "billable_by_default" => true,
-          "default_hourly_rate" => 100
-        )
-        
-        harvest.task_assignments.create("project" => project, "task" => task1)
-        harvest.task_assignments.create("project" => project, "task" => task2)
-        
-        all_assignments = harvest.task_assignments.all(project)
-        assignment1 = all_assignments.detect {|a| a.task_id == task1.id }
-        assignment2 = all_assignments.detect {|a| a.task_id == task2.id }
-        
-        assignment1.hourly_rate = 100
-        assignment1 = harvest.task_assignments.update(assignment1)
-        assignment1.hourly_rate.should == 100.0
-
-        harvest.task_assignments.delete(assignment1)
-        all_assignments = harvest.task_assignments.all(project)
-        all_assignments.size.should == 1
+      it 'returns true' do
+        expect(task.default_hourly_rate).to eql(120)
+        expect(task.name).to eql('A crud task')
       end
     end
 
-    it "allows creating and assigning the task at the same time" do
-      cassette('tasks3') do
-        client = harvest.clients.create(FactoryGirl.attributes_for(:client))
+    context 'allows to update invoice tasks' do
+      before do
+        allow(harvest.tasks).to receive(:update)
+          .and_return(task)
+        task.default_hourly_rate = 140
+        task = harvest.tasks.update(task)
+      end
 
-        project       = harvest.projects.create(
-          "name"      => "Test Project3",
-          "active"    => true,
-          "notes"     => "project to test the api",
-          "client_id" => client.id
-        )
+      it 'returns true' do
+        expect(task.default_hourly_rate).to eql(140)
+      end
+    end
 
-        project2 = harvest.projects.create_task(project, "A simple task")
-        project2.should == project
+    context 'allows to remove invoice tasks' do
+      before do
+        allow(harvest.tasks).to receive(:delete).and_return([])
+        allow(harvest.tasks).to receive(:all).and_return([])
+        harvest.tasks.delete(task)
+      end
 
-        harvest.task_assignments.all(project).size.should == 1
+      it 'returns true' do
+        expect(harvest.tasks.all.select do |t|
+          t.name == 'A crud task'
+        end).to eql([])
+      end
+    end
+  end
+
+  describe 'task assignments' do
+    let(:project) { create(:project) }
+    let(:task) do
+      create(:task, name: 'A task for joe', default_hourly_rate: 120)
+    end
+    let(:task_assignment) do
+      create(:task_assignment, project: project, task: task)
+    end
+
+    context 'allows to add invoice task assignments' do
+      before do
+        allow(harvest.task_assignments).to receive(:create)
+          .and_return(task)
+      end
+
+      it 'returns true' do
+        expect(task_assignment.hourly_rate).to eql(120)
+      end
+    end
+
+    context 'allows to update invoice task assignments' do
+      before do
+        allow(harvest.task_assignments).to receive(:update)
+          .and_return(task)
+        task_assignment.hourly_rate = 100
+        task = harvest.task_assignments.update(task_assignment)
+      end
+
+      it 'returns true' do
+        expect(task_assignment.hourly_rate).to eql(100)
+      end
+    end
+
+    context 'allows to remove invoice task assignments' do
+      before do
+        allow(harvest.task_assignments).to receive(:delete)
+          .and_return([])
+        allow(harvest.task_assignments).to receive(:all)
+          .and_return([task_assignment])
+        harvest.task_assignments.delete(task_assignment)
+      end
+
+      it 'returns true' do
+        expect(harvest.task_assignments.all(project).count).to eql(1)
+      end
+    end
+  end
+
+  describe 'projects' do
+    let(:project) { create(:project) }
+    let(:task) do
+      create(:task, name: 'A task for joe', default_hourly_rate: 120)
+    end
+    let(:task_assignment) do
+      create(:task_assignment, project: project, task: task)
+    end
+
+    context 'allows to add project and task' do
+      before do
+        allow(harvest.projects).to receive(:create_task)
+          .and_return(task)
+          allow(harvest.task_assignments).to receive(:all)
+          .and_return([task_assignment])
+      end
+
+      it 'returns true' do
+        expect(harvest.task_assignments.all(project).size).to eql(1)
       end
     end
   end

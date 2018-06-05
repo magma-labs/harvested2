@@ -1,19 +1,19 @@
 module Harvest
-  class TaskAssignment < Hashie::Mash
+  class UserProjectAssignment < Hashie::Mash
     include Harvest::Model
 
     skip_json_root true
 
     def initialize(args = {}, _ = nil)
       args = args.stringify_keys
-      self.task = args.delete('task') if args['task']
+      self.user = args.delete('user') if args['user']
       self.project = args.delete('project') if args['project']
 
       super
     end
 
-    def task=(task)
-      self['task_id'] = task['id'].to_i
+    def user=(user)
+      self['user_id'] = user['id'].to_i
     end
 
     def project=(project)
@@ -24,8 +24,8 @@ module Harvest
       !deactivated
     end
 
-    def task_as_json
-      { 'task' => { 'id' => task_id } }
+    def user_as_json
+      { 'user' => { 'id' => user_id } }
     end
   end
 end

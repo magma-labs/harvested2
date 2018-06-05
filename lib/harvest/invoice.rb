@@ -17,7 +17,6 @@ module Harvest
   # [+period_end+] end of the invoice period
   # [+expense_period_start+] start of the invoice expense period
   # [+expense_period_end+] end of the invoice expense period
-  # [+csv_line_items+] csv formatted line items for the invoice +kind,description,quantity,unit_price,amount,taxed,taxed2,project_id+
   # [+created_at+] (READONLY) when the invoice was created
   # [+updated_at+] (READONLY) when the invoice was updated
   # [+id+] (READONLY) the id of the invoice
@@ -39,15 +38,23 @@ module Harvest
   class Invoice < Hashie::Mash
     include Harvest::Model
 
+    skip_json_root true
     api_path '/invoices'
 
-    attr_reader :line_items
-    attr_accessor :update_line_items
+    # attr_reader :line_items
+    # attr_accessor :update_line_items
 
     def self.parse(json)
-      parsed   = String === json ? JSON.parse(json) : json
-      invoices = Array.wrap(parsed).map {|attrs| new(attrs["invoices"])}
-      invoice  = Array.wrap(parsed).map {|attrs| new(attrs["invoice"])}
+      parsed = String === json ? JSON.parse(json) : json
+
+      invoices = Array.wrap(parsed[json_root.pluralize]).map do |attrs|
+        new(attrs)
+      end
+
+      invoice = Array.wrap(parsed[json_root]).map do |attrs|
+        new(attrs)
+      end
+
       if invoices.first && invoices.first.length > 0
         invoices
       else
@@ -57,53 +64,70 @@ module Harvest
 
     def initialize(args = {}, _ = nil)
       if args
-        args            = args.to_hash.stringify_keys
-        self.line_items = args.delete("csv_line_items")
-        self.line_items = args.delete("line_items")
-        self.line_items = [] if self.line_items.nil?
-        self.update_line_items = args.delete("update_line_items")
+        args = args.to_hash.stringify_keys
+        self.client = args.delete('client') if args['client']
+        self.creator = args.delete('creator') if args['creator']
+        self.line_items = args.delete('line_items') if args['line_items']
+        self.update_line_items = args.delete('update_line_items')
       end
+
       super
     end
 
+    def client=(client)
+      self['client_id'] = client['id'].to_i
+    end
+
+    def creator=(creator)
+      self['creator_id'] = creator['id'].to_i
+    end
+
+    def line_items
+      @line_items || []
+    end
+
     def line_items=(raw_or_rich)
-      unless raw_or_rich.nil?
-        @line_items = case raw_or_rich
+      @line_items = unless raw_or_rich.nil?
+        case raw_or_rich
         when String
-          @line_items = decode_csv(raw_or_rich).map {|row| Harvest::LineItem.new(row) }
+          decode_csv(raw_or_rich).map { |row| Harvest::LineItem.new(row) }
         else
           raw_or_rich
         end
+      else
+        []
       end
     end
 
-    def as_json(*options)
-      json = super(*options)
-      json[json_root]["csv_line_items"] = encode_csv(@line_items) if update_line_items
-      json
+    def invoice_as_json
+      { 'invoice': { 'id': invoice_id } }
     end
 
     private
-      def decode_csv(string)
-        csv = CSV.parse(string)
-        headers = csv.shift
-        csv.map! {|row| headers.zip(row) }
-        csv.map {|row| row.inject({}) {|h, tuple| h.update(tuple[0] => tuple[1]) } }
-      end
 
-      def encode_csv(line_items)
-        if line_items.empty?
-          ""
-        else
-          header = %w(kind description quantity unit_price amount taxed taxed2 project_id)
-
-          CSV.generate do |csv|
-            csv << header
-            line_items.each do |item|
-              csv << header.inject([]) {|row, attr| row << item[attr] }
-            end
-          end
+    def decode_csv(string)
+      csv = CSV.parse(string)
+      headers = csv.shift
+      csv.map! { |row| headers.zip(row) }
+      csv.map do |row|
+        row.inject({}) do |h, tuple|
+          h.update(tuple[0] => tuple[1])
         end
       end
+    end
+
+    def encode_csv(line_items)
+      return '' if line_items.empty?
+
+      header = %w(kind description quantity unit_price amount taxed
+        taxed2 project_id)
+
+      CSV.generate do |csv|
+        csv << header
+        line_items.each do |item|
+          csv << header.inject([]) { |row, attr| row << item[attr] }
+        end
+      end
+    end
   end
 end

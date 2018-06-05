@@ -1,28 +1,25 @@
 module Harvest
   class BasicAuthCredentials
-    def initialize(subdomain: nil, username: nil, password: nil)
-      @subdomain, @username, @password = subdomain, username, password
+    def initialize(access_token: nil, account_id: nil)
+      @access_token = access_token
+      @account_id = account_id
     end
 
     def set_authentication(request_options)
       request_options[:headers] ||= {}
-      request_options[:headers]["Authorization"] = "Basic #{basic_auth}"
+      request_options[:headers]['Authorization'] = "Bearer #{@access_token}"
+      request_options[:headers]['Harvest-Account-ID'] = @account_id
     end
 
     def host
-      "https://#{@subdomain}.harvestapp.com"
-    end
-
-    private
-
-    def basic_auth
-      Base64.encode64("#{@username}:#{@password}").delete("\r\n")
+      'https://api.harvestapp.com/v2'
     end
   end
 
   class OAuthCredentials
-    def initialize(access_token)
+    def initialize(access_token: nil, client_id: nil)
       @access_token = access_token
+      @client_id = client_id
     end
 
     def set_authentication(request_options)
@@ -31,7 +28,7 @@ module Harvest
     end
 
     def host
-      "https://api.harvestapp.com"
+      'https://api.harvestapp.com/v2'
     end
   end
 end

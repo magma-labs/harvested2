@@ -1,10 +1,10 @@
 require 'spec_helper'
 
-describe Harvest::UserAssignment do
+describe Harvest::UserProjectAssignment do
   describe "#user_as_json" do
-    it "should generate the xml for existing users" do
-      assignment = Harvest::UserAssignment.new(:user => double(:user, :to_i => 3))
-      assignment.user_as_json.should == {"user" => {"id" => 3}}
+    it 'should generate the xml for existing users' do
+      assignment = Harvest::UserProjectAssignment.new('user' => { 'id' => 3 })
+      expect(assignment.user_as_json).to eql({ 'user' => { 'id' => 3 }})
     end
   end
 end

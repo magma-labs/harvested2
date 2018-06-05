@@ -25,12 +25,24 @@ module Harvest
   class Project < Hashie::Mash
     include Harvest::Model
 
+    skip_json_root true
     api_path '/projects'
+
+    def initialize(args = {}, _ = nil)
+      args = args.stringify_keys
+      self.client = args.delete('client') if args['client']
+
+      super
+    end
+
+    def client=(client)
+      self['client_id'] = client['id'].to_i
+    end
 
     def as_json(args = {})
       super(args).tap do |json|
-        json[json_root].delete("hint_earliest_record_at")
-        json[json_root].delete("hint_latest_record_at")
+        json.delete('hint_earliest_record_at')
+        json.delete('hint_latest_record_at')
       end
     end
   end

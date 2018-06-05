@@ -1,4 +1,4 @@
-require "harvested"
+require "harvested2"
 
 subdomain = 'yoursubdomain'
 username = 'yourusername'

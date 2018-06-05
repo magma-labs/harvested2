@@ -14,6 +14,7 @@ module Harvest
   class Contact < Hashie::Mash
     include Harvest::Model
 
+    skip_json_root true
     api_path '/contacts'
   end
 end

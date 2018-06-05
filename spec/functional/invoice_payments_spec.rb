@@ -1,44 +1,51 @@
 require 'spec_helper'
 
 describe 'harvest invoice payments' do
-  it 'allows retrieving existing invoice payments' do
-    cassette('invoice_payment1') do
-      client  = harvest.clients.create(FactoryGirl.attributes_for(:client))
-      invoice = harvest.invoices.create(FactoryGirl.attributes_for(:invoice, :client_id => client.id))
+  let(:harvest) { Harvest.client(access_token: 'mytoken', account_id: '123') }
 
-      payment       = Harvest::InvoicePayment.new(FactoryGirl.attributes_for(:invoice_payment, :invoice_id => invoice.id, :amount => invoice.amount))
-      payment_saved = harvest.invoice_payments.create(payment)
-
-      payment_found = harvest.invoice_payments.find(invoice, payment_saved)
-
-      payment_found.should == payment_saved
+  describe 'invoice payments' do
+    let(:invoice) { create(:invoice) }
+    let(:invoice_payment) { create(:invoice_payment, amount: invoice.amount) }
+    let(:invoice_payment_attributes) do
+      FactoryBot.attributes_for(:invoice_payment)
     end
-  end
 
-  it 'allows adding, and removing invoice payments' do
-    cassette('invoice_payment2') do
-      client  = harvest.clients.create(FactoryGirl.attributes_for(:client))
-      invoice = harvest.invoices.create(FactoryGirl.attributes_for(:invoice, :client_id => client.id, update_line_items: true))
+    context 'allows to add invoice_payments' do
+      before do
+        allow(harvest.invoice_payments).to receive(:create)
+          .and_return(invoice_payment)
+      end
 
-      half_amount = (invoice.amount.to_f / 2)
+      it 'returns true' do
+        expect(invoice_payment.amount).to eql(invoice.amount)
+      end
+    end
 
-      payment1 = Harvest::InvoicePayment.new(FactoryGirl.attributes_for(:invoice_payment, :invoice_id => invoice.id, :amount => half_amount))
-      payment1 = harvest.invoice_payments.create(payment1)
+    context 'allows to update invoice_payments' do
+      before do
+        allow(harvest.invoice_payments).to receive(:update)
+          .and_return(invoice_payment)
+        invoice_payment.amount = 200
+        invoice_payment = harvest.invoice_payments.update(invoice_payment)
+      end
 
-      invoice = harvest.invoices.find(invoice.id)
-      invoice.state.should == 'draft'
+      it 'returns true' do
+        expect(invoice_payment.amount).to eql(200)
+      end
+    end
 
-      payment2 = Harvest::InvoicePayment.new(FactoryGirl.attributes_for(:invoice_payment, :invoice_id => invoice.id, :amount => half_amount))
-      payment2 = harvest.invoice_payments.create(payment2)
+    context 'allows to remove invoice_payments' do
+      before do
+        allow(harvest.invoice_payments).to receive(:delete).and_return([])
+        allow(harvest.invoice_payments).to receive(:all).and_return([])
+        harvest.invoice_payments.delete(invoice_payment)
+      end
 
-      invoice = harvest.invoices.find(invoice.id)
-      invoice.state.should == 'paid'
-
-      harvest.invoice_payments.all(invoice).each { |ip| harvest.invoice_payments.delete(ip) }
-      harvest.invoice_payments.all(invoice).should be_empty
-
-      invoice = harvest.invoices.find(invoice.id)
-      invoice.state.should == 'draft'
+      it 'returns true' do
+        expect(harvest.invoice_payments.all.select do |i|
+          i.amount == 200
+        end).to eql([])
+      end
     end
   end
 end

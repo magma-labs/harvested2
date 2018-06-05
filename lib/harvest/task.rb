@@ -12,8 +12,8 @@ module Harvest
   class Task < Hashie::Mash
     include Harvest::Model
 
+    skip_json_root true
     api_path '/tasks'
-    delegate_methods :default? => :is_default
 
     def active?
       !deactivated

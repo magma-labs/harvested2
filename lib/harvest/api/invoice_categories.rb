@@ -1,8 +1,9 @@
 module Harvest
   module API
     class InvoiceCategories < Base
-      api_model Harvest::InvoiceCategory
       include Harvest::Behavior::Crud
+
+      api_model Harvest::InvoiceCategory
 
       def find(*)
         raise "find is unsupported for InvoiceCategories"

@@ -1,16 +1,16 @@
 module Harvest
   class Base
     attr_reader :request, :credentials
-
     # @see Harvest.client
     # @see Harvest.hardy_client
-    def initialize(subdomain: nil, username: nil, password: nil, access_token: nil)
-      @credentials = if subdomain && username && password
-        BasicAuthCredentials.new(subdomain: subdomain, username: username, password: password)
+    def initialize(access_token: nil, account_id: nil, client_id: nil)
+      @credentials = if access_token && account_id
+        BasicAuthCredentials.new(access_token: access_token,
+          account_id: account_id)
       elsif access_token
-        OAuthCredentials.new(access_token)
+        OAuthCredentials.new(access_token: access_token, client_id: client_id)
       else
-        fail 'You must provide either :subdomain, :username, and :password or an oauth :access_token'
+        fail 'You must provide either :access_token and :account_id or an oauth :client_id'
       end
     end
 
@@ -193,28 +193,28 @@ module Harvest
     #
     # == Examples
     #  project = harvest.projects.find(101)
-    #  harvest.user_assignments.all(project) # returns all users assigned to the project  (as Harvest::UserAssignment)
+    #  harvest.user_project_assignments.all(project) # returns all users assigned to the project  (as Harvest::UserAssignment)
     #
     #  project = harvest.projects.find(201)
-    #  harvest.user_assignments.find(project, 5) # returns the user assignment with ID 5 that is assigned to the project
+    #  harvest.user_project_assignments.find(project, 5) # returns the user assignment with ID 5 that is assigned to the project
     #
     #  project = harvest.projects.find(301)
     #  user = harvest.users.find(100)
     #  assignment = Harvest::UserAssignment.new(:user_id => user.id, :project_id => project.id)
-    #  saved_assignment = harvest.user_assignments.create(assignment) # returns a saved version of the user assignment
+    #  saved_assignment = harvest.user_project_assignments.create(assignment) # returns a saved version of the user assignment
     #
     #  project = harvest.projects.find(401)
-    #  assignment = harvest.user_assignments.find(project, 15)
+    #  assignment = harvest.user_project_assignments.find(project, 15)
     #  assignment.project_manager = true
-    #  updated_assignment = harvest.user_assignments.update(assignment) # returns an updated assignment
+    #  updated_assignment = harvest.user_project_assignments.update(assignment) # returns an updated assignment
     #
     #  project = harvest.projects.find(501)
-    #  assignment = harvest.user_assignments.find(project, 25)
-    #  harvest.user_assignments.delete(assignment) # returns 25
+    #  assignment = harvest.user_project_assignments.find(project, 25)
+    #  harvest.user_project_assignments.delete(assignment) # returns 25
     #
     # @return [Harvest::API::UserAssignments]
-    def user_assignments
-      @user_assignments ||= Harvest::API::UserAssignments.new(credentials)
+    def user_project_assignments
+      @user_project_assignments ||= Harvest::API::UserProjectAssignments.new(credentials)
     end
 
     # All API Actions surrounding managing expense categories
@@ -310,7 +310,7 @@ module Harvest
     #  invoice = harvest.invoices.find(100)
     #  message = Harvest::InvoiceMessage.new(:invoice_id => invoice.id)
     #  harvest.invoice_messages.mark_as_sent(message)
-    #  
+    #
     #  invoice = harvest.invoices.find(100)
     #  message = Harvest::InvoiceMessage.new(:invoice_id => invoice.id)
     #  harvest.invoice_messages.mark_as_closed(message)

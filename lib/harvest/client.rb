@@ -13,6 +13,7 @@ module Harvest
   class Client < Hashie::Mash
     include Harvest::Model
 
+    skip_json_root true
     api_path '/clients'
 
     def is_active=(val)
