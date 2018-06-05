@@ -1,6 +1,7 @@
 # Harvested: A Ruby Harvest API V2
+[![Build Status](https://travis-ci.org/magma-labs/harvested2.svg?branch=master)](https://travis-ci.org/magma-labs/harvested2)
 
-This is a Ruby wrapper for the [Harvest API V2](https://help.getharvest.com/api-v2).
+This is a Ruby wrapper for the [Harvest API V2](https://help.getharvest.com/api-v2)
 
 ## Installation
 
