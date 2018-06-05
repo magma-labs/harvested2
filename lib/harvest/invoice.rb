@@ -100,7 +100,7 @@ module Harvest
     end
 
     def invoice_as_json
-      { 'invoice': { 'id': invoice_id } }
+      { 'invoice' => { 'id' => invoice_id } }
     end
 
     private

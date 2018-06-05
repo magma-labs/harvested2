@@ -18,7 +18,7 @@ module Harvest
     end
 
     def line_item_as_json
-      { 'line_item': { 'id': line_item_id } }
+      { 'line_item' => { 'id' => line_item_id } }
     end
   end
 end
