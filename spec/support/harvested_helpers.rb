@@ -1,28 +1,4 @@
 module HarvestedHelpers
-  def self.credentials
-    raise "You need a credentials file in support/harvest_credentials.yml!!" unless File.exist?("#{File.dirname(__FILE__)}/harvest_credentials.yml")
-    @credentials ||= YAML.load_file("#{File.dirname(__FILE__)}/harvest_credentials.yml")
-  end
-
-  def credentials
-    HarvestedHelpers.credentials
-  end
-
-  def self.simple_harvest
-    Harvest.client(access_token: credentials['access_token'],
-      client_id: credentials['client_id'],
-      account_id: credentials['account_id'])
-  end
-
-  def harvest
-    @harvest ||= HarvestedHelpers.simple_harvest
-  end
-
-  def hardy_harvest
-    Harvest.hardy_client(access_token: credentials['access_token'],
-      account_id: credentials['account_id'])
-  end
-
   def self.clean_remote
     harvest = simple_harvest
     harvest.users.all.each do |u|
@@ -35,8 +11,6 @@ module HarvestedHelpers
         Time.utc(2014, 6, 21)).each do |time|
           harvest.time.delete(time, u)
       end
-
-      # harvest.users.delete(u) if u.email != credentials["username"]
     end
 
     # we store expenses on this date in the tests
