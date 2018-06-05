@@ -1,3 +1,7 @@
+## 5.0.0 - Jun 5, 2018
+  * Add support for API V2
+  * Task/UserAssignment endpoints now are called Task/UserProjectAssignmens
+
 ## 4.0.0 - Apr 21, 2017
   * Invoices need to be told explicitly to send line items to the server with a new attribute: `update_line_items`.
   * Task/UserAssignment endpoints can now be passed query params. (Thanks Brendan Loudermilk - @bloudermilk and Nick Giancola @patbenatar)

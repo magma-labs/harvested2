@@ -1,6 +1,8 @@
 require 'spec_helper'
 
 describe 'harvest errors' do
+  let(:harvest) { Harvest.client(access_token: 'mytoken', account_id: '123') }
+
   before { WebMock.disable_net_connect! }
 
   context 'wraps errors' do

@@ -3,9 +3,8 @@ source 'https://rubygems.org'
 gemspec
 
 group :development, :test do
-  gem 'bundler', '>= 1.6.2'
-  gem 'rake'
-  gem 'rspec'
+  gem 'rake', '< 11.0'
+  gem 'rspec', '~> 2'
   gem 'jruby-openssl', platform: [:jruby]
   gem 'webmock'
   gem 'byebug'
