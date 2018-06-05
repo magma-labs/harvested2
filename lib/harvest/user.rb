@@ -1,5 +1,4 @@
 module Harvest
-
   # The model that contains information about a task
   #
   # == Fields
@@ -21,9 +20,9 @@ module Harvest
     skip_json_root true
     api_path '/users'
 
-    delegate_methods(:active?     => :is_active,
-                     :admin?      => :is_admin,
-                     :contractor? => :is_contractor)
+    delegate_methods(active?: :is_active,
+                     admin?: :is_admin,
+                     contractor?: :is_contractor)
 
     def initialize(args = {}, _ = nil)
       args             = args.stringify_keys

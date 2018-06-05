@@ -1,5 +1,4 @@
 module Harvest
-
   # The model that contains information about a task
   #
   # == Fields

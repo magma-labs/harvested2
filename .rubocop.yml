@@ -1,0 +1,34 @@
+AllCops:
+  TargetRubyVersion: 2.1
+  DisplayCopNames: true
+  Exclude:
+    - .git/**/*
+    - spec/core/middleware/response/sanitize_response_spec.rb
+    - vendor/**/*
+
+# Align the elements of a hash literal if they span more than one line.
+Layout/AlignHash:
+  EnforcedLastArgumentHashStyle: ignore_implicit
+
+# Align the parameters of a method call if they span more than one line.
+Layout/AlignParameters:
+  EnforcedStyle: with_fixed_indentation
+
+# Checks the indentation of hanging closing parentheses.
+Layout/ClosingParenthesisIndentation:
+  Enabled: false
+
+# Checks the indentation of the first parameter in a method call.
+Layout/FirstParameterIndentation:
+  EnforcedStyle: consistent
+
+# Checks indentation of method calls with the dot operator that span more than one line.
+Layout/MultilineMethodCallIndentation:
+  EnforcedStyle: indented
+
+# Checks indentation of binary operations that span more than one line.
+Layout/MultilineOperationIndentation:
+  EnforcedStyle: indented
+
+Metrics:
+  Enabled: false
