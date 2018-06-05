@@ -14,15 +14,15 @@ module Harvest
         END
       end
     end
-    
+
     def __getobj__; @_sd_obj; end
     def __setobj__(obj); @_sd_obj = obj; end
-    
+
     def wrap_collection
       collection = yield
       HardyCollection.new(collection, self, @max_retries)
     end
-    
+
     class HardyCollection < Delegator
       def initialize(collection, client, max_retries)
         super(collection)
@@ -39,13 +39,13 @@ module Harvest
           END
         end
       end
-      
+
       def __getobj__; @_sd_obj; end
       def __setobj__(obj); @_sd_obj = obj; end
-      
+
       def retry_rate_limits
         retries = 0
-        
+
         retry_func = lambda do |e|
           if retries < @max_retries
             retries += 1
@@ -54,12 +54,12 @@ module Harvest
             raise e
           end
         end
-        
+
         begin
           yield
         rescue Harvest::RateLimited => e
-          seconds = if e.response.headers["retry-after"]
-            e.response.headers["retry-after"].to_i
+          seconds = if e.response.headers['retry-after']
+            e.response.headers['retry-after'].to_i
           else
             16
           end

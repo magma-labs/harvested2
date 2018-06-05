@@ -26,7 +26,7 @@ module Harvest
 
     def initialize(args = {}, _ = nil)
       args             = args.stringify_keys
-      args["is_admin"] = args.delete('admin') if args['admin']
+      args['is_admin'] = args.delete('admin') if args['admin']
       self.timezone    = args.delete('timezone') if args['timezone']
       super
     end

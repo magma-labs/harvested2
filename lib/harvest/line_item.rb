@@ -3,7 +3,6 @@ module Harvest
     def initialize(args = {}, _ = nil)
       args = args.stringify_keys
       self.project = args.delete('project')
-
       super
     end
 

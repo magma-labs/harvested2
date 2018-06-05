@@ -3,6 +3,9 @@ module Harvest
     include Harvest::Model
 
     api_path '/messages'
-    def self.json_root; 'message'; end
+
+    def self.json_root
+     'message'
+    end
   end
 end
