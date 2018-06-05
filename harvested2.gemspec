@@ -19,9 +19,8 @@ Gem::Specification.new do |s|
   s.requirements << 'none'
   s.test_files = s.files.grep(%r{^(test|spec|features)/})
 
-  # s.required_ruby_version     = '>= 1.9.0'
-  s.required_ruby_version = '>= 2.2.2'
-  # s.required_rubygems_version = '>= 1.3.6'
+  s.required_ruby_version     = '>= 2.1'
+  s.required_rubygems_version = '>= 1.3.6'
 
   s.add_runtime_dependency('httparty')
   s.add_runtime_dependency('hashie')
