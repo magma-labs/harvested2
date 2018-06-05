@@ -3,8 +3,8 @@ source 'https://rubygems.org'
 gemspec
 
 group :development do
-  gem 'rake', '< 11.0'
-  gem 'rubocop', '~> 0.49.0'
+  gem 'rake'
+  gem 'rubocop'
   gem 'jruby-openssl', platform: [:jruby]
   gem 'byebug'
   gem 'pry'
@@ -14,7 +14,7 @@ group :development do
 end
 
 group :test do
-  gem 'rspec', '~> 2'
+  gem 'rspec'
   gem 'webmock'
   gem 'factory_bot'
 end

@@ -31,9 +31,9 @@ module Harvest
           body:   options[:body],
           format: :plain,
           headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json; charset=utf-8',
-            'User-Agent': "Harvested/#{Harvest::VERSION}"
+            "Accept"       => "application/json",
+            "Content-Type" => "application/json; charset=utf-8",
+            "User-Agent"   => "Harvested/#{Harvest::VERSION}"
           }.update(options[:headers] || {})
         }
 
@@ -65,7 +65,7 @@ module Harvest
       end
 
       def of_user_query(user)
-        query = user.nil? ? {} : { 'of_user': user.to_i }
+        query = user.nil? ? {} : { 'of_user' => user.to_i }
       end
     end
   end
