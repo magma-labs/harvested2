@@ -36,7 +36,7 @@ as nil if not included.
 You can pass in any hash of query attributes you wish as per the
 [Harvest API V2](https://help.getharvest.com/api-v2) page.
 
-You can find more examples in `/examples` and in the documentation for Harvest::Base
+You can find more examples at [Harvested Examples](https://github.com/harvesthq/harvest_api_samples/tree/master/v2)
 
 ## Permissions
 
@@ -55,7 +55,7 @@ harvest.projects.all # This will wait for the Rate Limit reset if you have gone 
 
 ## Ruby support
 
-Harvested's tests currently support Ruby version 2.2+
+Harvested's tests currently support Ruby version 2.1+
 
 ## Links
 
