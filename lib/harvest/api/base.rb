@@ -67,6 +67,10 @@ module Harvest
       def of_user_query(user)
         query = user.nil? ? {} : { 'of_user' => user.to_i }
       end
+
+      def to_json(json)
+        parsed = String === json ? JSON.parse(json) : json
+      end
     end
   end
 end
