@@ -41,8 +41,8 @@ module Harvest
     skip_json_root true
     api_path '/invoices'
 
-    # attr_reader :line_items
-    # attr_accessor :update_line_items
+    attr_reader :line_items
+    attr_accessor :update_line_items
 
     def self.parse(json)
       parsed = String === json ? JSON.parse(json) : json
