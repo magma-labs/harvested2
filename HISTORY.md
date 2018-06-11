@@ -1,6 +1,18 @@
-## 5.0.0 - Jun 5, 2018
+## 5.0.3 - Jun 10, 2018
   * Add support for API V2
   * Task/UserAssignment endpoints now are called Task/UserProjectAssignmens
+  * Update invoice, categories, messages and payment related actions
+  * Update expense actions
+  * Update client actions
+  * Update time entry actions
+  * Update user actions
+  * Update task actions
+  * Update line item actions
+  * Update account actions
+  * Add company actions
+  * Add receipt actions
+  * Update project, task and user assignments actions
+  * Remove deprecated reports endpoint
 
 ## 4.0.0 - Apr 21, 2017
   * Invoices need to be told explicitly to send line items to the server with a new attribute: `update_line_items`.
