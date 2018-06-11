@@ -60,7 +60,7 @@ describe 'harvest invoices' do
         expect(invoice.subject)
           .to eql("Invoice for Joe's Stream Cleaning")
         expect(invoice.amount).to eql(2400.0)
-        expect(invoice.line_items.size).to eql(1)
+        expect(invoice.line_items.size).to eql(0)
       end
     end
 
@@ -78,7 +78,7 @@ describe 'harvest invoices' do
       it 'returns true' do
         expect(invoice.subject).to eql('Updated Invoice for Joe')
         expect(invoice.amount).to eql(4800.0)
-        expect(invoice.line_items.size).to eql(2)
+        expect(invoice.line_items.size).to eql(1)
       end
     end
 
@@ -100,6 +100,7 @@ describe 'harvest invoices' do
   describe 'read' do
     let(:invoice_category) { create(:invoice_category) }
     let(:invoice) { create(:invoice) }
+    let(:line_item) { create(:line_item) }
     let(:invoice_attributes) { FactoryBot.attributes_for(:invoice) }
     let(:invoices) { [invoice] }
 
@@ -112,6 +113,7 @@ describe 'harvest invoices' do
         allow(harvest.invoices).to receive(:all).and_return(invoices)
 
         invoice = harvest.invoices.create(invoice_attributes)
+        invoice.line_items << line_item
         result = harvest.invoices.find(invoice.id)
       end
 

@@ -18,10 +18,8 @@ FactoryBot.define do
     tax2 nil
     import_hours 'no'
     import_expenses 'no'
-    update_line_items true
 
     client
-    line_items { [create(:line_item)] }
   end
 end
 

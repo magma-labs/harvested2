@@ -2,27 +2,38 @@ module Harvest
   module API
     class InvoiceMessages < Base
       api_model Harvest::InvoiceMessage
-      include Harvest::Behavior::Crud
 
-      def all(invoice)
-        response = request(:get, credentials, "/invoices/#{invoice.to_i}/messages")
-        api_model.parse(response.parsed_response)
+      def all(invoice, query = {})
+        response = request(:get, credentials, "/invoices/#{invoice.id}/messages", query: query)
+        response_parsed = api_model.to_json(response.parsed_response)
+
+        if response_parsed['total_pages'] > 1
+          counter = response_parsed['page']
+
+          while counter <= response_parsed['total_pages'] do
+            counter += 1
+            query = { 'page' => counter }
+
+            response_page = request(:get, credentials,
+              "/invoices/#{invoice.id}/messages",
+              query: query)
+            invoice_messages = api_model.to_json(response.parsed_response)
+            response_parsed['invoice_messages']
+              .concat(invoice_messages['invoice_messages'])
+          end
+        end
+
+        api_model.parse(response_parsed)
       end
 
-      def find(invoice, message)
-        response = request(:get, credentials, "/invoices/#{invoice.to_i}/messages/#{message.to_i}")
-        api_model.parse(response.parsed_response).first
+      def create(invoice, invoice_message)
+        invoice_message = api_model.wrap(invoice_message)
+        response = request(:post, credentials, "/invoices/#{invoice.id}/messages", body: invoice_message.to_json)
+        find(invoice_message.id)
       end
 
-      def create(message)
-        message = api_model.wrap(message)
-        response = request(:post, credentials, "/invoices/#{message.invoice_id}/messages", :body => message.to_json)
-        id = response.headers["location"].match(/\/.*\/(\d+)\/.*\/(\d+)/)[2]
-        find(message.invoice_id, id)
-      end
-
-      def delete(message)
-        request(:delete, credentials, "/invoices/#{message.invoice_id}/messages/#{message.to_i}")
+      def delete(invoice, invoice_message)
+        request(:delete, credentials, "/invoices/#{invoice.id}/messages/#{invoice_message.id}")
         message.id
       end
 
@@ -30,46 +41,46 @@ module Harvest
       #
       # @param [Harvest::InvoiceMessage] The message you want to send
       # @return [Harvest::InvoiceMessage] The sent message
-      def mark_as_sent(message)
-        send_status_message(message, 'mark_as_sent')
+      def mark_as_sent(invoice, invoice_message)
+        send_status_message(invoice, invoice_message, 'send')
       end
 
       # Create a message and mark an open invoice as closed (writing an invoice off)
       #
       # @param [Harvest::InvoiceMessage] The message you want to send
       # @return [Harvest::InvoiceMessage] The sent message
-      def mark_as_closed(message)
-        send_status_message(message, 'mark_as_closed')
+      def mark_as_closed(invoice, invoice_message)
+        send_status_message(invoice, invoice_message, 'close')
       end
 
       # Create a message and mark a closed (written-off) invoice as open
       #
       # @param [Harvest::InvoiceMessage] The message you want to send
       # @return [Harvest::InvoiceMessage] The sent message
-      def re_open(message)
-        send_status_message(message, 're_open')
+      def re_open(invoice, invoice_message)
+        send_status_message(invoice, invoice_message, 're-open')
       end
 
       # Create a message for marking an open invoice as draft
       #
       # @param [Harvest::InvoiceMessage] The message you want to send
       # @return [Harvest::InvoiceMessage] The sent message
-      def mark_as_draft(message)
-        send_status_message(message, 'mark_as_draft')
+      def mark_as_draft(invoice_message)
+        send_status_message(invoice, invoice_message, 'draft')
       end
 
       private
 
-      def send_status_message(message, action)
-        message = api_model.wrap(message)
-        response = request( :post, 
-                            credentials, 
-                            "/invoices/#{message.invoice_id}/messages/#{action}",
-                            :body => message.to_json
-                          )
-        message
-      end
+      def send_status_message(invoice, invoice_message, action)
+        invoice_message = api_model.wrap(invoice_message)
+        response = request( :post,
+                            credentials,
+                            "/invoices/#{invoice.id}/messages",
+                            event_type: action,
+                            body: invoice_message.to_json)
 
+        invoice_message
+      end
     end
   end
 end

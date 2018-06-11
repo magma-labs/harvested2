@@ -2,10 +2,7 @@ module Harvest
   class InvoicePayment < Hashie::Mash
     include Harvest::Model
 
+    skip_json_root true
     api_path '/payments'
-
-    def self.json_root
-      'payment'
-    end
   end
 end

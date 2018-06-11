@@ -2,30 +2,40 @@ module Harvest
   module API
     class InvoicePayments < Base
       api_model Harvest::InvoicePayment
-      include Harvest::Behavior::Crud
 
-      def all(invoice)
-        response = request(:get, credentials, "/invoices/#{invoice.to_i}/payments")
-        api_model.parse(response.parsed_response)
+      def all(invoice, query = {})
+        response = request(:get, credentials, "/invoices/#{invoice.id}/payments", query: query)
+        response_parsed = api_model.to_json(response.parsed_response)
+
+        if response_parsed['total_pages'].to_i > 1
+          counter = response_parsed['page'].to_i
+
+          while counter <= response_parsed['total_pages'].to_i do
+            counter += 1
+            query = { 'page' => counter }
+
+            response_page = request(:get, credentials,
+              "/invoices/#{invoice.id}/payments",
+              query: query)
+            invoice_payments = api_model.to_json(response.parsed_response)
+            response_parsed['invoice_payments']
+              .concat(invoice_payments['invoice_payments'])
+          end
+        end
+
+        api_model.parse(response_parsed)
       end
 
-      def find(invoice, payment)
-        response = request(:get, credentials, "/invoices/#{invoice.to_i}/payments/#{payment.to_i}")
-        api_model.parse(response.parsed_response).first
+      def create(invoice, invoice_payment)
+        invoice_payment = api_model.wrap(invoice_payment)
+        response = request(:post, credentials, "/invoices/#{invoice.id}/payments", body: invoice_payment.to_json)
+        find(invoice_payment.id)
       end
 
-      def create(payment)
-        payment = api_model.wrap(payment)
-        response = request(:post, credentials, "/invoices/#{payment.invoice_id}/payments", :body => payment.to_json)
-        id = response.headers["location"].match(/\/.*\/(\d+)\/.*\/(\d+)/)[2]
-        find(payment.invoice_id, id)
+      def delete(invoice, invoice_payment)
+        request(:delete, credentials, "/invoices/#{invoice.id}/payments/#{invoice_payment.id}")
+        invoice_payment.id
       end
-
-      def delete(payment)
-        request(:delete, credentials, "/invoices/#{payment.invoice_id}/payments/#{payment.to_i}")
-        payment.id
-      end
-
     end
   end
 end

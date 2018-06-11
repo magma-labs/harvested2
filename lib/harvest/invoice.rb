@@ -10,7 +10,7 @@ module Harvest
   # [+notes+] notes on the invoice
   # [+number+] invoice number
   # [+kind+] (REQUIRED) the type of the invoice +free_form|project|task|people|detailed+
-  # [+projects_to_invoice+] comma separated project ids to gather data from
+  # [+projects_.idnvoice+] comma separated project ids to gather data from
   # [+import_hours+] import hours from +project|task|people|detailed+ one of +yes|no+
   # [+import_expenses+] import expenses from +project|task|people|detailed+ one of +yes|no+
   # [+period_start+] start of the invoice period
@@ -42,92 +42,34 @@ module Harvest
     api_path '/invoices'
 
     attr_reader :line_items
-    attr_accessor :update_line_items
-
-    def self.parse(json)
-      parsed = String === json ? JSON.parse(json) : json
-
-      invoices = Array.wrap(parsed[json_root.pluralize]).map do |attrs|
-        new(attrs)
-      end
-
-      invoice = Array.wrap(parsed[json_root]).map do |attrs|
-        new(attrs)
-      end
-
-      if invoices.first && invoices.first.length > 0
-        invoices
-      else
-        invoice
-      end
-    end
 
     def initialize(args = {}, _ = nil)
       if args
-        args = args.to_hash.stringify_keys
+        args = args.stringify_keys
         self.client = args.delete('client') if args['client']
         self.creator = args.delete('creator') if args['creator']
         self.line_items = args.delete('line_items') if args['line_items']
-        self.update_line_items = args.delete('update_line_items')
+        self.line_items = [] if self.line_items.nil?
+        super
       end
-
-      super
     end
 
     def client=(client)
-      self['client_id'] = client['id'].to_i
+      self['client_id'] = client['id']
     end
 
     def creator=(creator)
-      self['creator_id'] = creator['id'].to_i
+      self['creator_id'] = creator['id']
     end
 
-    def line_items
-      @line_items || []
-    end
-
-    def line_items=(raw_or_rich)
-      @line_items = unless raw_or_rich.nil?
-        case raw_or_rich
-        when String
-          decode_csv(raw_or_rich).map { |row| Harvest::LineItem.new(row) }
-        else
-          raw_or_rich
-        end
-      else
-        []
-      end
+    def line_items=(line_items)
+      @line_items = line_items.map do |row|
+        Harvest::LineItem.new(row)
+      end || []
     end
 
     def invoice_as_json
       { 'invoice' => { 'id' => invoice_id } }
-    end
-
-    private
-
-    def decode_csv(string)
-      csv = CSV.parse(string)
-      headers = csv.shift
-      csv.map! { |row| headers.zip(row) }
-      csv.map do |row|
-        row.inject({}) do |h, tuple|
-          h.update(tuple[0] => tuple[1])
-        end
-      end
-    end
-
-    def encode_csv(line_items)
-      return '' if line_items.empty?
-
-      header = %w(kind description quantity unit_price amount taxed
-        taxed2 project_id)
-
-      CSV.generate do |csv|
-        csv << header
-        line_items.each do |item|
-          csv << header.inject([]) { |row, attr| row << item[attr] }
-        end
-      end
     end
   end
 end
