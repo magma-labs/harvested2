@@ -27,7 +27,7 @@ line_item invoice invoice_payment
 invoice_message).each { |a| require "harvest/#{a}" }
 
 %w(base account clients contacts projects tasks users task_assignments
-user_assignments expense_categories expenses time
+user_assignments expense_categories expenses time_entry
 invoice_categories invoices invoice_payments
 invoice_messages).each { |a| require "harvest/api/#{a}" }
 

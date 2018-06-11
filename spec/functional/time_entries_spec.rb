@@ -8,7 +8,7 @@ describe 'harvest time tracking' do
 
     context 'allows to add time entry' do
       before do
-        allow(harvest.time).to receive(:create)
+        allow(harvest.time_entries).to receive(:create)
           .and_return(time_entry)
       end
 
@@ -19,10 +19,10 @@ describe 'harvest time tracking' do
 
     context 'allows to update time entry' do
       before do
-        allow(harvest.time).to receive(:update)
+        allow(harvest.time_entries).to receive(:update)
           .and_return(time_entry)
         time_entry.notes = 'New test api support'
-        time_entry = harvest.time.update(time_entry)
+        time_entry = harvest.time_entries.update(time_entry)
       end
 
       it 'returns true' do
@@ -32,13 +32,13 @@ describe 'harvest time tracking' do
 
     context 'allows to remove time entry' do
       before do
-        allow(harvest.time).to receive(:delete).and_return([])
-        allow(harvest.time).to receive(:all).and_return([])
-        harvest.time.delete(time_entry)
+        allow(harvest.time_entries).to receive(:delete).and_return([])
+        allow(harvest.time_entries).to receive(:all).and_return([])
+        harvest.time_entries.delete(time_entry)
       end
 
       it 'returns true' do
-        expect(harvest.time.all.select do |t|
+        expect(harvest.time_entries.all.select do |t|
           t.notes == 'New test api support'
         end).to eql([])
       end
@@ -49,7 +49,7 @@ describe 'harvest time tracking' do
     let(:time_entry) { create(:time_entry, :started) }
 
     before do
-      allow(harvest.time).to receive(:toggle)
+      allow(harvest.time_entries).to receive(:toggle)
         .and_return(time_entry)
     end
 
@@ -59,12 +59,12 @@ describe 'harvest time tracking' do
 
     it 'should be deactive' do
       time_entry.timer_started_at = nil
-      time_entry = harvest.time.toggle(time_entry)
+      time_entry = harvest.time_entries.toggle(time_entry)
       expect(time_entry.timer_started_at).to be_nil
     end
 
     it 'should reactive a time_entry' do
-      time_entry = harvest.time.toggle(time_entry)
+      time_entry = harvest.time_entries.toggle(time_entry)
       expect(time_entry).not_to be_nil
     end
   end
@@ -75,12 +75,12 @@ describe 'harvest time tracking' do
 
     context 'allows to add project and task' do
       before do
-        allow(harvest.time).to receive(:trackable_projects)
+        allow(harvest.time_entries).to receive(:trackable_projects)
           .and_return([])
       end
 
       it 'returns true' do
-        expect(harvest.time.trackable_projects(Time.now, user)).to eql([])
+        expect(harvest.time_entries.trackable_projects(Time.now, user)).to eql([])
       end
     end
   end
