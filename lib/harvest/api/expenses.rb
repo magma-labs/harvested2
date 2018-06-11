@@ -1,15 +1,8 @@
 module Harvest
   module API
     class Expenses < Base
-      include Harvest::Behavior::Crud
-
       api_model Harvest::Expense
-
-      def all(date = ::Time.now, user = nil)
-        date = ::Time.parse(date) if String === date
-        response = request(:get, credentials, "#{api_model.api_path}/#{date.yday}/#{date.year}", :query => of_user_query(user))
-        api_model.parse(response.parsed_response)
-      end
+      include Harvest::Behavior::Crud
 
       def attach(expense, filename, receipt)
         body = ""
@@ -21,7 +14,7 @@ module Harvest
         request(
           :post,
           credentials,
-          "#{api_model.api_path}/#{expense.to_i}/receipt",
+          "#{api_model.api_path}/#{expense.id}/receipt",
           :headers => {
             'Content-Type' => 'multipart/form-data; charset=utf-8; boundary=__X_ATTACH_BOUNDARY__',
             'Content-Length' => body.length.to_s,
