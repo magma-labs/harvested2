@@ -4,5 +4,6 @@ FactoryBot.define do
     description 'Description'
     quantity 200
     unit_price '12.00'
+    project
   end
 end
