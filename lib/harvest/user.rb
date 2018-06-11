@@ -25,9 +25,9 @@ module Harvest
                      contractor?: :is_contractor)
 
     def initialize(args = {}, _ = nil)
-      args             = args.stringify_keys
+      args = args.stringify_keys
       args['is_admin'] = args.delete('admin') if args['admin']
-      self.timezone    = args.delete('timezone') if args['timezone']
+      self.timezone = args.delete('timezone') if args['timezone']
       super
     end
 
