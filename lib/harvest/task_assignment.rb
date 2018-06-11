@@ -13,19 +13,15 @@ module Harvest
     end
 
     def task=(task)
-      self['task_id'] = task['id'].to_i
+      self['task_id'] = task['id']
     end
 
     def project=(project)
-      self['project_id'] = project['id'].to_i
+      self['project_id'] = project['id']
     end
 
     def active?
       !deactivated
-    end
-
-    def task_as_json
-      { 'task' => { 'id' => task_id } }
     end
   end
 end

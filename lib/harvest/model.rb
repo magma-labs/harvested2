@@ -20,10 +20,6 @@ module Harvest
         end
       end
 
-      def to_i
-        id
-      end
-
       def ==(other)
         other.kind_of?(self.class) && id == other.id
       end
@@ -60,15 +56,17 @@ module Harvest
 
       def parse(json)
         parsed = String === json ? JSON.parse(json) : json
-        Array.wrap(parsed[json_root.pluralize]).map do |attrs|
-          skip_json_root? ? new(attrs) : new(attrs[json_root])
-        end
+        objects = skip_json_root? && parsed[json_root.pluralize] || parsed
+        Array.wrap(objects).map { |attrs| new(attrs) }
       end
 
       def json_root
         Harvest::Model::Utility.underscore(
-          Harvest::Model::Utility.demodulize(to_s)
-        )
+          Harvest::Model::Utility.demodulize(to_s))
+      end
+
+      def to_json(json)
+        parsed = String === json ? JSON.parse(json) : json
       end
 
       def wrap(model_or_attrs)

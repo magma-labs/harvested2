@@ -213,8 +213,8 @@ module Harvest
     #  harvest.user_project_assignments.delete(assignment) # returns 25
     #
     # @return [Harvest::API::UserAssignments]
-    def user_project_assignments
-      @user_project_assignments ||= Harvest::API::UserProjectAssignments.new(credentials)
+    def user_assignments
+      @user_assignments ||= Harvest::API::UserAssignments.new(credentials)
     end
 
     # All API Actions surrounding managing expense categories
@@ -251,8 +251,8 @@ module Harvest
       @expenses ||= Harvest::API::Expenses.new(credentials)
     end
 
-    def time
-      @time ||= Harvest::API::Time.new(credentials)
+    def time_entries
+      @time_entries ||= Harvest::API::TimeEntry.new(credentials)
     end
 
     def reports
@@ -289,39 +289,45 @@ module Harvest
       @invoice_payments ||= Harvest::API::InvoicePayments.new(credentials)
     end
 
-    # All API Actions surrounding invoice messages
-    #
-    # == Examples
-    #
-    #  invoice = harvest.invoices.find(100)
-    #  harvest.invoice_messages.all(invoice) # returns all messages for the invoice (as Harvest::InvoicePayment)
-    #
-    #  invoice = harvest.invoices.find(100)
-    #  harvest.invoice_messages.find(invoice, 5) # returns the message with ID 5, assigned to the invoice
-    #
-    #  invoice = harvest.invoices.find(100)
-    #  message = Harvest::InvoiceMessage.new(:invoice_id => invoice.id)
-    #  saved_message = harvest.invoice_messages.create(message) # returns a saved version of the message
-    #
-    #  invoice = harvest.invoices.find(100)
-    #  message = harvest.invoice_messages.find(invoice, 5)
-    #  harvest.invoice_messages.delete(message) # returns 5
-    #
-    #  invoice = harvest.invoices.find(100)
-    #  message = Harvest::InvoiceMessage.new(:invoice_id => invoice.id)
-    #  harvest.invoice_messages.mark_as_sent(message)
-    #
-    #  invoice = harvest.invoices.find(100)
-    #  message = Harvest::InvoiceMessage.new(:invoice_id => invoice.id)
-    #  harvest.invoice_messages.mark_as_closed(message)
-    #
-    #  invoice = harvest.invoices.find(100)
-    #  message = Harvest::InvoiceMessage.new(:invoice_id => invoice.id)
-    #  harvest.invoice_messages.re_open(message)
-    #
-    # @return [Harvest::API::InvoiceMessages]
+    # id  | integer | Unique ID for the message.
+    # sent_by | string | Name of the user that created the message.
+    # sent_by_email | string | Email of the user that created the message.
+    # sent_from | string | Name of the user that the message was sent from.
+    # sent_from_email | string | Email of the user that message was sent from.
+    # recipients | array | Array of invoice message recipients.
+    # subject | string | The message subject.
+    # body | string | The message body.
+    # include_link_to_client_invoice | boolean | Whether to include a link to the client invoice in the message body. Not used when thank_you is true.
+    # attach_pdf | boolean | Whether to attach the invoice PDF to the message email.
+    # send_me_a_copy | boolean | Whether to email a copy of the message to the current user.
+    # thank_you | boolean | Whether this is a thank you message.
+    # event_type | string | The type of invoice event that occurred with the message: send, close, draft, re-open, or view.
+    # reminder | boolean | Whether this is a reminder message.
+    # send_reminder_on | date | The date the reminder email will be sent.
+    # created_at | datetime | Date and time the message was created.
+    # updated_at | datetime | Date and time the message was last updated.
     def invoice_messages
       @invoice_messages ||= Harvest::API::InvoiceMessages.new(credentials)
+    end
+
+    # base_uri | string | The Harvest URL for the company.
+    # full_domain | string | The Harvest domain for the company.
+    # name | string | The name of the company.
+    # is_active | boolean | Whether the company is active or archived.
+    # week_start_day | string | The week day used as the start of the week. Returns one of: Saturday, Sunday, or Monday.
+    # wants_timestamp_timers | boolean | Whether time is tracked via duration or start and end times.
+    # time_format | string | The format used to display time in Harvest. Returns either decimal or hours_minutes.
+    # plan_type | string | The type of plan the company is on. Examples: trial, free, or simple-v4
+    # clock | string | Used to represent whether the company is using a 12-hour or 24-hour clock. Returns either 12h or 24h.
+    # decimal_symbol | string | Symbol used when formatting decimals.
+    # thousands_separator | string | Separator used when formatting numbers.
+    # color_scheme | string | The color scheme being used in the Harvest web client.
+    # expense_feature | boolean|  Whether the expense module is enabled.
+    # invoice_feature | boolean | Whether the invoice module is enabled.
+    # estimate_feature | boolean | Whether the estimate module is enabled.
+    # approval_feature | boolean | Whether the approval module is enabled.
+    def company
+      @company ||= Harvest::API::Company.new(credentials)
     end
   end
 end

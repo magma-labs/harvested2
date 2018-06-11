@@ -1,5 +1,5 @@
 module Harvest
-  class UserProjectAssignment < Hashie::Mash
+  class UserAssignment < Hashie::Mash
     include Harvest::Model
 
     skip_json_root true
@@ -13,19 +13,15 @@ module Harvest
     end
 
     def user=(user)
-      self['user_id'] = user['id'].to_i
+      self['user_id'] = user['id']
     end
 
     def project=(project)
-      self['project_id'] = project['id'].to_i
+      self['project_id'] = project['id']
     end
 
     def active?
       !deactivated
-    end
-
-    def user_as_json
-      { 'user' => { 'id' => user_id } }
     end
   end
 end
