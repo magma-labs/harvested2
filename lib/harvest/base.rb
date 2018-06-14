@@ -255,16 +255,16 @@ module Harvest
       @time_entries ||= Harvest::API::TimeEntry.new(credentials)
     end
 
-    def reports
-      @reports ||= Harvest::API::Reports.new(credentials)
-    end
-
     def invoice_categories
       @invoice_categories ||= Harvest::API::InvoiceCategories.new(credentials)
     end
 
     def invoices
       @invoices ||= Harvest::API::Invoices.new(credentials)
+    end
+
+    def estimates
+      @estimates ||= Harvest::API::Estimates.new(credentials)
     end
 
     # All API Actions surrounding invoice payments

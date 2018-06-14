@@ -29,7 +29,7 @@ module Harvest
     api_path '/projects'
 
     def initialize(args = {}, _ = nil)
-      args = args.stringify_keys
+      args = args.to_hash.stringify_keys
       self.client = args.delete('client') if args['client']
       super
     end

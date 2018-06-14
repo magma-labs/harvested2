@@ -45,9 +45,10 @@ module Harvest
 
     def initialize(args = {}, _ = nil)
       if args
-        args = args.stringify_keys
+        args = args.to_hash.stringify_keys
         self.client = args.delete('client') if args['client']
         self.creator = args.delete('creator') if args['creator']
+        self.estimate = args.delete('estimate')
         self.line_items = args.delete('line_items') if args['line_items']
         self.line_items = [] if self.line_items.nil?
         super
@@ -60,6 +61,10 @@ module Harvest
 
     def creator=(creator)
       self['creator_id'] = creator['id']
+    end
+
+    def estimate=(estimate)
+      self['estimate_id'] = estimate && estimate['id']
     end
 
     def line_items=(line_items)

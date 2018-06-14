@@ -5,7 +5,7 @@ module Harvest
     skip_json_root true
 
     def initialize(args = {}, _ = nil)
-      args = args.stringify_keys
+      args = args.to_hash.stringify_keys
       self.user = args.delete('user') if args['user']
       self.project = args.delete('project') if args['project']
 

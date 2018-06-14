@@ -13,6 +13,7 @@
   * Add receipt actions
   * Update project, task and user assignments actions
   * Remove deprecated reports endpoint
+  * Add estimates support
 
 ## 4.0.0 - Apr 21, 2017
   * Invoices need to be told explicitly to send line items to the server with a new attribute: `update_line_items`.

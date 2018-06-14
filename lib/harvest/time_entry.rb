@@ -9,7 +9,8 @@ module Harvest
                      billed?: :is_billed)
 
     def initialize(args = {}, _ = nil)
-      args = args.stringify_keys
+      args = args.to_hash.stringify_keys
+      self.invoice = args.delete('invoice')
       self.user = args.delete('user') if args['user']
       self.task = args.delete('task') if args['task']
       self.client = args.delete('client') if args['client']
@@ -18,6 +19,10 @@ module Harvest
       self.user_assignment = args.delete('user_assignment') if args['user_assignment']
       self.task_assignment = args.delete('task_assignment') if args['task_assignment']
       super
+    end
+
+    def invoice=(invoice)
+      self['invoice_id'] = invoice && invoice['id']
     end
 
     def user=(user)
@@ -36,22 +41,16 @@ module Harvest
       self['task_id'] = task['id']
     end
 
+    def spent_date=(date)
+      self['spent_date'] = Date.parse(date.to_s)
+    end
+
     def user_assignment=(user_assignment)
       self['user_assignment_id'] = user_assignment['id']
     end
 
     def task_assignment=(task_assignment)
       self['task_assignment_id'] = task_assignment['id']
-    end
-
-    def spent_date=(date)
-      self['spent_date'] = Date.parse(date.to_s)
-    end
-
-    def as_json(args = {})
-      super(args).to_hash.stringify_keys.tap do |hash|
-        hash.update('spent_date' => (spent_date.nil? ? nil : spent_date.xmlschema))
-      end
     end
   end
 end

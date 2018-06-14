@@ -11,7 +11,7 @@ module Harvest
       end
 
       def as_json(args = {})
-        inner_json = self.to_hash.stringify_keys
+        inner_json = self.stringify_keys
         inner_json.delete('cache_version')
         if self.class.skip_json_root?
           inner_json

@@ -1,13 +1,13 @@
 module Harvest
   class LineItem < Hashie::Mash
     def initialize(args = {}, _ = nil)
-      args = args.stringify_keys
-      self.project = args.delete('project') if args['project']
+      args = args.to_hash.stringify_keys
+      self.project = args.delete('project')
       super
     end
 
     def project=(project)
-      self['project_id'] = project['id']
+      self['project_id'] = project && project['id']
     end
 
     def active?
