@@ -107,6 +107,10 @@ module Harvest
       @projects ||= Harvest::API::Projects.new(credentials)
     end
 
+    def project_assignments
+      @project_assignments ||= Harvest::API::ProjectAssignments.new(credentials)
+    end
+
     # All API Actions surrounding Tasks
     #
     # == Examples

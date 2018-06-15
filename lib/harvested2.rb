@@ -21,14 +21,14 @@ require 'harvest/base'
 
 %w(crud activatable).each { |a| require "harvest/behavior/#{a}" }
 
-%w(model client contact project task user task_assignment
+%w(model client contact project project_assignment task user task_assignment
 user_assignment estimate expense_category expense time_entry invoice_category
 line_item invoice invoice_payment
 invoice_message).each { |a| require "harvest/#{a}" }
 
-%w(base account clients contacts projects tasks users task_assignments
-user_assignments estimates expense_categories expenses time_entry
-invoice_categories invoices invoice_payments
+%w(base account clients contacts projects project_assignments tasks users
+task_assignments user_assignments estimates expense_categories expenses
+time_entry invoice_categories invoices invoice_payments
 invoice_messages).each { |a| require "harvest/api/#{a}" }
 
 module Harvest
